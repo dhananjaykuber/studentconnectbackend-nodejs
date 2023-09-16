@@ -8,6 +8,11 @@ const {
   removeMember,
   createStage,
   createTask,
+  updateTask,
+  deleteTask,
+  moveTask,
+  addComment,
+  deleteComment,
 } = require('../controllers/kanbanController');
 const authMiddleware = require('../middleware/auth');
 
@@ -36,5 +41,24 @@ router.post('/project/:projectId/stage', createStage);
 
 // create new task --> /api/kanban/stage/:stageId/task
 router.post('/stage/:stageId/task', createTask);
+
+// add new comment --> /api/kanban/:taskId/comment
+router.put('/task/:taskId/comment', authMiddleware, addComment);
+
+// delete comment --> /api/kanban/:taskId/comment
+router.delete(
+  '/task/:taskId/comment/:commentId',
+  authMiddleware,
+  deleteComment
+);
+
+// update task --> /api/kanban/task/:taskId
+router.put('/task/:taskId', updateTask);
+
+// delete task --> /api/kanban/task/:taskId
+router.delete('/task/:taskId', deleteTask);
+
+// move task
+router.put('/move-task/:taskId', authMiddleware, moveTask);
 
 module.exports = router;

@@ -21,7 +21,7 @@ const getProjects = async (req, res) => {
       members: {
         $in: [req.user],
       },
-    });
+    }).populate('lead', 'user_name profile_image');
 
     return res.status(200).json(data);
   } catch (error) {
@@ -65,18 +65,19 @@ const getProjectById = async (req, res) => {
             .exec();
 
           const formattedTasks = tasks.map((task) => ({
-            id: task._id,
+            _id: task._id,
             title: task.title,
             description: task.description,
             assignedTo: task.assignedTo, // User data for assignedTo
             addedBy: task.addedBy,
             labels: task.labels,
             comments: task.comments, // Comments with user data
+            dueDate: task.dueDate,
             // Add more task properties as needed
           }));
 
           stagesWithTasks.push({
-            id: stage._id,
+            _id: stage._id,
             title: stage.name,
             tasks: formattedTasks,
           });
@@ -85,7 +86,7 @@ const getProjectById = async (req, res) => {
         // Create the projectInfo object with the retrieved data
         const projectInfo = {
           project: {
-            id: project._id,
+            _id: project._id,
             name: project.name,
             description: project.description,
             lead: project.lead,
@@ -131,7 +132,7 @@ const addMember = async (req, res) => {
     });
 
     if (exists.length >= 1) {
-      // error
+      res.status(409).json({ error: 'User is already a member of project' });
     } else {
       const data = await ProjectModel.findByIdAndUpdate(
         projectId,
@@ -141,7 +142,7 @@ const addMember = async (req, res) => {
         { new: true }
       );
 
-      return res.status(200).json(data);
+      res.status(200).json(data);
     }
   } catch (error) {}
 };
@@ -210,6 +211,88 @@ const createTask = async (req, res) => {
   } catch (error) {}
 };
 
+const updateTask = async (req, res) => {
+  const { taskId } = req.params;
+
+  try {
+    const data = await TaskModel.findByIdAndUpdate(
+      taskId,
+      { ...req.body },
+      { new: true }
+    );
+
+    return res.status(200).json(data);
+  } catch (error) {}
+};
+
+const deleteTask = async (req, res) => {
+  const { taskId } = req.params;
+
+  try {
+    const data = await TaskModel.findByIdAndDelete(taskId);
+
+    return res.status(200).json(data);
+  } catch (error) {}
+};
+
+const moveTask = async (req, res) => {
+  const { destinationStage } = req.body;
+  const { taskId } = req.params;
+
+  console.log(destinationStage, taskId);
+
+  try {
+    const task = await TaskModel.findByIdAndUpdate(
+      taskId,
+      { $set: { stage: destinationStage } },
+      { new: true }
+    );
+
+    return res.status(200).json(task);
+  } catch (error) {}
+};
+
+const addComment = async (req, res) => {
+  const { taskId } = req.params;
+  const { message, commented_at } = req.body;
+
+  try {
+    const data = await TaskModel.findByIdAndUpdate(
+      taskId,
+      {
+        $push: {
+          comments: {
+            user: req.user,
+            text: message,
+            timestamp: commented_at,
+          },
+        },
+      },
+      { new: true }
+    ).populate('comments.user');
+
+    res.status(200).json(data);
+  } catch (error) {}
+};
+
+const deleteComment = async (req, res) => {
+  const { taskId, commentId } = req.params;
+
+  try {
+    const data = await TaskModel.findByIdAndUpdate(
+      taskId,
+      {
+        $pull: {
+          comments: { _id: commentId },
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json(data);
+  } catch (error) {}
+};
+
 module.exports = {
   getUsers,
   createProject,
@@ -219,4 +302,9 @@ module.exports = {
   removeMember,
   createStage,
   createTask,
+  deleteTask,
+  moveTask,
+  updateTask,
+  addComment,
+  deleteComment,
 };
