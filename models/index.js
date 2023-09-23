@@ -3,4 +3,5 @@ module.exports = {
   StageModel: require('./Stage'),
   TaskModel: require('./Task'),
   UserModel: require('./User'),
+  NotificationModel: require('./Notification'),
 };

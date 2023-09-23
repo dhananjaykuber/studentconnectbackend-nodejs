@@ -7,12 +7,16 @@ const {
   addMember,
   removeMember,
   createStage,
+  updateStage,
   createTask,
   updateTask,
   deleteTask,
   moveTask,
   addComment,
   deleteComment,
+  getNotifications,
+  updateNotification,
+  deleteNotification,
 } = require('../controllers/kanbanController');
 const authMiddleware = require('../middleware/auth');
 
@@ -31,16 +35,19 @@ router.get('/project/:projectId', authMiddleware, getProjectById);
 router.post('/project', authMiddleware, createProject);
 
 // add member to project --> /api/kanban/project/:projectId/members
-router.post(`/project/:projectId/members`, addMember);
+router.post(`/project/:projectId/members`, authMiddleware, addMember);
 
 // remove member from project --> /api/kanban/project/:projectId/members
-router.delete(`/project/:projectId/members`, removeMember);
+router.delete(`/project/:projectId/members`, authMiddleware, removeMember);
 
 // create new project stage --> /api/kanban/project/:projectId/stage
-router.post('/project/:projectId/stage', createStage);
+router.post('/project/:projectId/stage', authMiddleware, createStage);
+
+// update project stage --> /api/kanban/project/:projectId/stage/:stageId
+router.put('/project/:projectId/stage/:stageId', authMiddleware, updateStage);
 
 // create new task --> /api/kanban/stage/:stageId/task
-router.post('/stage/:stageId/task', createTask);
+router.post('/stage/:stageId/task', authMiddleware, createTask);
 
 // add new comment --> /api/kanban/:taskId/comment
 router.put('/task/:taskId/comment', authMiddleware, addComment);
@@ -53,12 +60,25 @@ router.delete(
 );
 
 // update task --> /api/kanban/task/:taskId
-router.put('/task/:taskId', updateTask);
+router.put('/task/:taskId', authMiddleware, updateTask);
 
 // delete task --> /api/kanban/task/:taskId
-router.delete('/task/:taskId', deleteTask);
+router.delete('/task/:taskId', authMiddleware, deleteTask);
 
 // move task
 router.put('/move-task/:taskId', authMiddleware, moveTask);
+
+// get all notifications
+router.get('/notification/:projectId', authMiddleware, getNotifications);
+
+// update notification status
+router.put('/notification/:notificationId', authMiddleware, updateNotification);
+
+// delete notification
+router.delete(
+  '/notification/:notificationId',
+  authMiddleware,
+  deleteNotification
+);
 
 module.exports = router;

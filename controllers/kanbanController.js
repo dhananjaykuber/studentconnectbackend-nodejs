@@ -1,4 +1,11 @@
-const { UserModel, ProjectModel, StageModel, TaskModel } = require('../models');
+const {
+  UserModel,
+  ProjectModel,
+  StageModel,
+  TaskModel,
+  NotificationModel,
+} = require('../models');
+const sendNotification = require('../utils/sendNotification');
 
 const getUsers = async (req, res) => {
   const { user } = req.query;
@@ -79,6 +86,7 @@ const getProjectById = async (req, res) => {
           stagesWithTasks.push({
             _id: stage._id,
             title: stage.name,
+            description: stage.description,
             tasks: formattedTasks,
           });
         }
@@ -192,9 +200,34 @@ const createStage = async (req, res) => {
   } catch (error) {}
 };
 
+const updateStage = async (req, res) => {
+  const { stageId } = req.params;
+  const { title, description } = req.body;
+
+  try {
+    const data = await StageModel.findByIdAndUpdate(
+      stageId,
+      { $set: { name: title, description: description } },
+      { new: true }
+    );
+
+    console.log(data);
+
+    return res.status(200).json(data);
+  } catch (error) {}
+};
+
 const createTask = async (req, res) => {
   const { stageId } = req.params;
-  const { title, description, addedBy, assignedTo, dueDate, labels } = req.body;
+  const {
+    title,
+    description,
+    addedBy,
+    assignedTo,
+    dueDate,
+    labels,
+    projectId,
+  } = req.body;
   try {
     const task = await TaskModel.create({
       title,
@@ -207,12 +240,24 @@ const createTask = async (req, res) => {
     });
     const data = await task.save();
 
+    assignedTo.map((userId) => {
+      sendNotification(
+        req,
+        userId,
+        req.user.user_name,
+        `${req.user.user_name} created and add you in this task.`,
+        data._id,
+        projectId
+      );
+    });
+
     return res.status(200).json(data);
   } catch (error) {}
 };
 
 const updateTask = async (req, res) => {
   const { taskId } = req.params;
+  const { projectId } = req.body;
 
   try {
     const data = await TaskModel.findByIdAndUpdate(
@@ -220,6 +265,17 @@ const updateTask = async (req, res) => {
       { ...req.body },
       { new: true }
     );
+
+    data.assignedTo.map((userId) => {
+      sendNotification(
+        req,
+        userId,
+        req.user.user_name,
+        `${req.user.user_name} has made changes in this task`,
+        taskId,
+        projectId
+      );
+    });
 
     return res.status(200).json(data);
   } catch (error) {}
@@ -236,10 +292,8 @@ const deleteTask = async (req, res) => {
 };
 
 const moveTask = async (req, res) => {
-  const { destinationStage } = req.body;
+  const { destinationStage, projectId, title } = req.body;
   const { taskId } = req.params;
-
-  console.log(destinationStage, taskId);
 
   try {
     const task = await TaskModel.findByIdAndUpdate(
@@ -248,13 +302,24 @@ const moveTask = async (req, res) => {
       { new: true }
     );
 
+    task.assignedTo.map((userId) => {
+      sendNotification(
+        req,
+        userId,
+        req.user.user_name,
+        `${req.user.user_name} moved task to ${title}`,
+        taskId,
+        projectId
+      );
+    });
+
     return res.status(200).json(task);
   } catch (error) {}
 };
 
 const addComment = async (req, res) => {
   const { taskId } = req.params;
-  const { message, commented_at } = req.body;
+  const { message, commented_at, projectId } = req.body;
 
   try {
     const data = await TaskModel.findByIdAndUpdate(
@@ -270,6 +335,18 @@ const addComment = async (req, res) => {
       },
       { new: true }
     ).populate('comments.user');
+
+    data.assignedTo.forEach(async (userId) => {
+      // reusable function created in utils
+      sendNotification(
+        req,
+        userId,
+        req.user.user_name,
+        message,
+        taskId,
+        projectId
+      );
+    });
 
     res.status(200).json(data);
   } catch (error) {}
@@ -293,6 +370,48 @@ const deleteComment = async (req, res) => {
   } catch (error) {}
 };
 
+const getNotifications = async (req, res) => {
+  const { projectId } = req.params;
+
+  console.log(projectId);
+
+  try {
+    const data = await NotificationModel.find({
+      to: req.user._id,
+      project: projectId,
+    });
+
+    res.status(200).json(data);
+  } catch (error) {}
+};
+
+const updateNotification = async (req, res) => {
+  const { notificationId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const data = await NotificationModel.findByIdAndUpdate(
+      notificationId,
+      {
+        status: status,
+      },
+      { new: true }
+    );
+
+    res.status(200).json(data);
+  } catch (error) {}
+};
+
+const deleteNotification = async (req, res) => {
+  const { notificationId } = req.params;
+
+  try {
+    const data = await TaskModel.findByIdAndDelete(notificationId);
+
+    res.status(200).json(data);
+  } catch (error) {}
+};
+
 module.exports = {
   getUsers,
   createProject,
@@ -301,10 +420,14 @@ module.exports = {
   addMember,
   removeMember,
   createStage,
+  updateStage,
   createTask,
   deleteTask,
   moveTask,
   updateTask,
   addComment,
   deleteComment,
+  getNotifications,
+  updateNotification,
+  deleteNotification,
 };
