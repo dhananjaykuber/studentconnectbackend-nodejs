@@ -26,7 +26,7 @@ const addComment = async (req, res) => {
         req,
         userId,
         req.user.user_name,
-        message,
+        `${req.user.user_name} has commented on this : ${message}`,
         taskId,
         projectId
       );

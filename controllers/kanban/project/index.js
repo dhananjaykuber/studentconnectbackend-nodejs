@@ -87,7 +87,9 @@ const getProject = async (req, res) => {
         throw error;
       }
     } else {
-      // error
+      return res
+        .status(404)
+        .json({ error: 'You are not a part of this project.' });
     }
   } catch (error) {}
 };

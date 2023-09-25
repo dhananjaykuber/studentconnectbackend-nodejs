@@ -34,7 +34,7 @@ const deleteNotification = async (req, res) => {
   const { notificationId } = req.params;
 
   try {
-    const data = await TaskModel.findByIdAndDelete(notificationId);
+    const data = await NotificationModel.findByIdAndDelete(notificationId);
 
     res.status(200).json(data);
   } catch (error) {}
