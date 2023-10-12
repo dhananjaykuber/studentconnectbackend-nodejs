@@ -6,22 +6,22 @@ const projectSchema = new Schema({
   description: String,
   lead: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'authentication_customuser',
   },
   stages: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Stage',
+      ref: 'kanban_stages',
     },
   ],
   members: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'authentication_customuser',
     },
   ],
 });
 
-const Project = mongoose.model('Project', projectSchema);
+const Project = mongoose.model('Kanban_Project', projectSchema);
 
 module.exports = Project;

@@ -14,6 +14,7 @@ const projectRoute = require('./routes/kanban/project');
 const stageRoute = require('./routes/kanban/stage');
 const taskRoute = require('./routes/kanban/task');
 const userRoute = require('./routes/kanban/user');
+const { UserModel } = require('./models');
 
 const app = express();
 const server = http.createServer(app);

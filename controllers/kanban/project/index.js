@@ -4,12 +4,13 @@ const getProjects = async (req, res) => {
   try {
     const data = await ProjectModel.find({
       members: {
-        $in: [req.user],
+        $in: [req.user._id],
       },
-    }).populate('lead', 'user_name profile_image');
+    }).populate('lead', 'user_name'); // also add profile image here
 
     return res.status(200).json(data);
   } catch (error) {
+    console.log(error);
     return res.status(401).json({ error: 'Projects not found' });
   }
 };
@@ -106,7 +107,9 @@ const createProject = async (req, res) => {
     });
 
     return res.status(200).json(data);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 module.exports = { getProject, getProjects, createProject };

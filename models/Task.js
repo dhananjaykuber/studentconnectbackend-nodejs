@@ -6,16 +6,16 @@ const taskSchema = new Schema({
   description: String,
   addedBy: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'authentication_customuser',
   },
   stage: {
     type: Schema.Types.ObjectId,
-    ref: 'Stage',
+    ref: 'kanban_stages',
   },
   assignedTo: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'authentication_customuser',
     },
   ],
   dueDate: Date,
@@ -24,7 +24,7 @@ const taskSchema = new Schema({
     {
       user: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'authentication_customuser',
       },
       text: String,
       timestamp: Date,
@@ -32,6 +32,6 @@ const taskSchema = new Schema({
   ],
 });
 
-const Task = mongoose.model('Task', taskSchema);
+const Task = mongoose.model('Kanban_Task', taskSchema);
 
 module.exports = Task;

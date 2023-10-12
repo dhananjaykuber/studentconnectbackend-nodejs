@@ -7,6 +7,6 @@ const stageSchema = new Schema({
   order: Number,
 });
 
-const Stage = mongoose.model('Stage', stageSchema);
+const Stage = mongoose.model('Kanban_Stage', stageSchema);
 
 module.exports = Stage;
