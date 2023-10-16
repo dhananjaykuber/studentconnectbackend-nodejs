@@ -1,14 +1,17 @@
 const { BlogModel } = require('../../models');
 
 const addBlog = async (req, res) => {
-  const { title, description, banner, categories } = req.body;
+  const { title, description, banner, bannerRef, categories, bannerType } =
+    req.body;
 
   try {
     const blog = await BlogModel.create({
       title,
       description,
       banner,
+      bannerRef,
       categories,
+      bannerType,
       // author: req.user._id,
     });
 

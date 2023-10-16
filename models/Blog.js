@@ -7,6 +7,8 @@ const blogSchema = new Schema(
     description: String,
     categories: [String],
     banner: String,
+    bannerRef: String,
+    bannerType: String,
     author: {
       type: Schema.Types.ObjectId,
       ref: 'authentication_customuser',
