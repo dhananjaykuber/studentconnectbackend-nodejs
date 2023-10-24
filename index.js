@@ -18,9 +18,6 @@ const userRoute = require('./routes/kanban/user');
 // GPT quiz routes
 const quizRoute = require('./routes/gptQuiz/quiz');
 
-// Blog routes
-const blogRoute = require('./routes/blog');
-
 const app = express();
 const server = http.createServer(app);
 
@@ -38,9 +35,6 @@ app.use('/api/kanban', notificationRoute);
 
 // GPT Quiz
 app.use('/api/gpt-quiz', quizRoute);
-
-// Blog
-app.use('/api/blog', blogRoute);
 
 mongoose
   .connect(process.env.MONGODB_URI)

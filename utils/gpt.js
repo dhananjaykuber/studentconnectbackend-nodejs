@@ -1,7 +1,7 @@
 const { OpenAI } = require('openai');
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // defaults to process.env["OPENAI_API_KEY"]
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 async function strict_output(
@@ -53,12 +53,14 @@ async function strict_output(
           role: 'system',
           content: system_prompt + output_format_prompt + error_msg,
         },
-        { role: 'user', content: user_prompt.toString() },
+        {
+          role: 'user',
+          content: user_prompt.toString() + output_format_prompt,
+        },
       ],
     });
 
-    let res =
-      response.data.choices[0].message?.content?.replace(/'/g, '"') ?? '';
+    let res = response.choices[0].message?.content?.replace(/'/g, '"') ?? '';
 
     // ensure that we don't replace away apostrophes in text
     res = res.replace(/(\w)"(\w)/g, "$1'$2");
