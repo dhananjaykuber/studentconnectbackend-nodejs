@@ -1,4 +1,5 @@
 const { ProjectModel, StageModel, TaskModel } = require('../../../models');
+const getObjectIdByUserId = require('../../../utils/getObjectIdByUserId');
 
 const getProjects = async (req, res) => {
   try {
@@ -28,8 +29,8 @@ const getProject = async (req, res) => {
       try {
         // Find the project by its ID and populate the 'lead' and 'members' fields with user data
         const project = await ProjectModel.findById(projectId)
-          .populate('lead', 'user_name profile_image')
-          .populate('members', 'user_name profile_image')
+          .populate('lead', 'user_name profile_image user_id')
+          .populate('members', 'user_name profile_image user_id')
           .exec();
 
         if (!project) {
@@ -96,14 +97,18 @@ const getProject = async (req, res) => {
 };
 
 const createProject = async (req, res) => {
-  const { name, description, members, lead } = req.body;
+  const { name, description, lead, projectId, projectUrl } = req.body;
+
+  const membersObjectId = await getObjectIdByUserId(lead);
 
   try {
     const data = await ProjectModel.create({
       name,
       description,
-      members,
-      lead,
+      members: [membersObjectId],
+      lead: membersObjectId,
+      projectId,
+      projectUrl,
     });
 
     return res.status(200).json(data);

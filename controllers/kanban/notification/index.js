@@ -1,16 +1,18 @@
-const { TaskModel, NotificationModel } = require('../../../models');
+const { NotificationModel } = require('../../../models');
 
 const getNotifications = async (req, res) => {
   const { projectId } = req.params;
 
   try {
     const data = await NotificationModel.find({
-      to: req.user._id,
+      to: req.user.id,
       project: projectId,
     });
 
     res.status(200).json(data);
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).json({ error: error });
+  }
 };
 
 const updateNotification = async (req, res) => {

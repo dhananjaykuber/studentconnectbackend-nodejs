@@ -1,4 +1,5 @@
 const { TaskModel } = require('../../../models');
+const getObjectId = require('../../../utils/getObjectIdByUserId');
 const sendNotification = require('../../../utils/sendNotification');
 
 const createTask = async (req, res) => {
@@ -13,11 +14,18 @@ const createTask = async (req, res) => {
     projectId,
   } = req.body;
   try {
+    const addedByObjectId = await getObjectId(addedBy);
+    let assignedToObjectIds = [];
+    assignedTo?.map(async (assigned) => {
+      const objId = await getObjectId(assigned);
+      assignedToObjectIds.push(objId);
+    });
+
     const task = await TaskModel.create({
       title,
       description,
-      addedBy,
-      assignedTo,
+      addedBy: addedByObjectId,
+      assignedTo: assignedToObjectIds,
       dueDate,
       labels,
       stage: stageId,

@@ -10,10 +10,11 @@ module.exports = async (req, res, next) => {
   const token = authorization.split(' ')[1];
 
   try {
-    const user = await UserModel.findById(token);
+    const user = await UserModel.findOne({ user_id: token });
 
     if (user) {
       req.user = user;
+      console.log(user);
     } else {
       return res.status(400).json({ error: error.message });
     }
