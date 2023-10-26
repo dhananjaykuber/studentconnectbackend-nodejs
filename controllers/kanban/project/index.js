@@ -46,9 +46,9 @@ const getProject = async (req, res) => {
         // Iterate over each stage and populate it with its tasks
         for (const stage of stages) {
           const tasks = await TaskModel.find({ stage: stage._id })
-            .populate('assignedTo', 'user_name profile_image')
-            .populate('addedBy', 'user_name profile_image') // Populate addedBy with user data
-            .populate('comments.user', 'user_name profile_image')
+            .populate('assignedTo', 'user_name profile_image user_id')
+            .populate('addedBy', 'user_name profile_image user_id') // Populate addedBy with user data
+            .populate('comments.user', 'user_name profile_image user_id')
             .exec();
 
           const formattedTasks = tasks.map((task) => ({
@@ -79,6 +79,7 @@ const getProject = async (req, res) => {
             description: project.description,
             lead: project.lead,
             members: project.members,
+            projectUrl: project.projectUrl,
           },
           stages: stagesWithTasks,
         };
@@ -93,7 +94,9 @@ const getProject = async (req, res) => {
         .status(404)
         .json({ error: 'You are not a part of this project.' });
     }
-  } catch (error) {}
+  } catch (error) {
+    res.status(404).json({ error: 'Project not found.' });
+  }
 };
 
 const createProject = async (req, res) => {
@@ -111,9 +114,11 @@ const createProject = async (req, res) => {
       projectUrl,
     });
 
-    return res.status(200).json(data);
+    await data.populate('lead', 'user_name profile_image user_id');
+
+    res.status(200).json(data);
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: 'Cannto create project.' });
   }
 };
 

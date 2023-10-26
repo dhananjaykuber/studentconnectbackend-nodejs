@@ -14,7 +14,6 @@ module.exports = async (req, res, next) => {
 
     if (user) {
       req.user = user;
-      console.log(user);
     } else {
       return res.status(400).json({ error: error.message });
     }

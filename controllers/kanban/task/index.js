@@ -15,11 +15,13 @@ const createTask = async (req, res) => {
   } = req.body;
   try {
     const addedByObjectId = await getObjectId(addedBy);
-    let assignedToObjectIds = [];
-    assignedTo?.map(async (assigned) => {
-      const objId = await getObjectId(assigned);
-      assignedToObjectIds.push(objId);
-    });
+
+    const assignedToObjectIds = await Promise.all(
+      assignedTo.map(async (assigned) => {
+        const objId = await getObjectId(assigned);
+        return objId.toString();
+      })
+    );
 
     const task = await TaskModel.create({
       title,
@@ -51,10 +53,19 @@ const updateTask = async (req, res) => {
   const { taskId } = req.params;
   const { projectId } = req.body;
 
+  const { assignedTo } = req.body;
+
+  const assignedToObjectIds = await Promise.all(
+    assignedTo.map(async (assigned) => {
+      const objId = await getObjectId(assigned);
+      return objId.toString();
+    })
+  );
+
   try {
     const data = await TaskModel.findByIdAndUpdate(
       taskId,
-      { ...req.body },
+      { ...req.body, assignedTo: assignedToObjectIds },
       { new: true }
     );
 
