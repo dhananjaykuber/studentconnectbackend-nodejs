@@ -7,7 +7,7 @@ const getProjects = async (req, res) => {
       members: {
         $in: [req.user._id],
       },
-    }).populate('lead', 'user_name'); // also add profile image here
+    }).populate('lead', 'user_name profile_image user_id');
 
     return res.status(200).json(data);
   } catch (error) {
